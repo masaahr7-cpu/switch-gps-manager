@@ -15,16 +15,22 @@ jobs:
       with:
         distribution: 'zulu'
         java-version: '17'
-        cache: 'gradle'
 
-    - name: Grant Execute Permission to Gradle Wrapper
-      run: chmod +x gradlew
+    - name: Setup Flutter Development Framework
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.x' # Stable version for Traccar Manager builds
+        channel: 'stable'
+        cache: true
 
-    - name: Execute Android Studio Gradle Automated Compilation Build
-      run: ./gradlew assembleDebug
+    - name: Download App Package Dependencies
+      run: flutter pub get
+
+    - name: Execute Flutter Automated Compilation Build
+      run: flutter build apk --debug
 
     - name: Route Native Binary Asset to Dashboard Directory
       uses: actions/upload-artifact@v4
       with:
         name: SwitchTrackingBinaryBuild
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: build/app/outputs/flutter-apk/app-debug.apk
