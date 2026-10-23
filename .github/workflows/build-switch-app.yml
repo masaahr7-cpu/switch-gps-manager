@@ -14,17 +14,22 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '11' # Downgraded to Java 11 for perfect compatibility with Flutter 3.7 configurations
+        java-version: '11'
 
     - name: Setup Flutter Development Framework
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.7.12' # Locked to match the exact requirement from the log output
+        flutter-version: '3.7.12'
         channel: 'stable'
         cache: true
 
     - name: Download App Package Dependencies
-      run: flutter pub get
+      run: |
+        flutter pub get
+        flutter pub run flutter_launcher_icons:main || true
+
+    - name: Clean Local System Caches
+      run: flutter clean
 
     - name: Execute Flutter Automated Compilation Build
       run: flutter build apk --debug
