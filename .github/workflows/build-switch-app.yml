@@ -5,7 +5,7 @@ on:
 
 jobs:
   compile-apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # Enforces a stable Ubuntu version compatible with older tools
     steps:
     - name: Pull Switch Source Code From Repository
       uses: actions/checkout@v4
@@ -14,7 +14,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '11'
+        java-version: '11' # Matches the requirements for older mobile frameworks
 
     - name: Setup Flutter Development Framework
       uses: subosito/flutter-action@v2
@@ -32,7 +32,7 @@ jobs:
       run: flutter clean
 
     - name: Execute Flutter Automated Compilation Build
-      run: flutter build apk --debug
+      run: flutter build apk --debug --no-pub
 
     - name: Route Native Binary Asset to Dashboard Directory
       uses: actions/upload-artifact@v4
