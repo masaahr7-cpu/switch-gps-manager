@@ -14,12 +14,12 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '17'
+        java-version: '11' # Downgraded to Java 11 for perfect compatibility with Flutter 3.7 configurations
 
     - name: Setup Flutter Development Framework
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.22.x' # Stable version for Traccar Manager builds
+        flutter-version: '3.7.12' # Locked to match the exact requirement from the log output
         channel: 'stable'
         cache: true
 
