@@ -1,0 +1,30 @@
+name: Compile Switch Tracking Production APK
+on:
+  push:
+    branches: [ master, main ]
+
+jobs:
+  compile-apk:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Pull Switch Source Code From Repository
+      uses: actions/checkout@v4
+
+    - name: Configure Java Infrastructure Context
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        cache: 'gradle'
+
+    - name: Grant Execute Permission to Gradle Wrapper
+      run: chmod +x gradlew
+
+    - name: Execute Android Studio Gradle Automated Compilation Build
+      run: ./gradlew assembleDebug
+
+    - name: Route Native Binary Asset to Dashboard Directory
+      uses: actions/upload-artifact@v4
+      with:
+        name: SwitchTrackingBinaryBuild
+        path: app/build/outputs/apk/debug/app-debug.apk
