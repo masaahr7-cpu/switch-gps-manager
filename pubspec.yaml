@@ -1,5 +1,5 @@
 name: traccar_manager
-description: "Switch GPS - Powered by Traccar"
+description: "Switch GPS Manager - Powered by Masaa24 Networks | www.switchmicrofinance.co.tz"
 publish_to: 'none'
 version: 6.2.1+84
 
@@ -22,8 +22,8 @@ dependencies:
   permission_handler: ^11.0.0
   rate_my_app: ^2.3.0
   share_plus: ^10.0.0
-  shared_preferences: ^2.2.0
-  shared_preferences_android: 2.2.0
+  shared_preferences: ^2.5.2
+  shared_preferences_android: ^2.4.7
   url_launcher: ^6.2.5
 
 dev_dependencies:
