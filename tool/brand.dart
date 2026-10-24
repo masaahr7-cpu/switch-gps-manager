@@ -1,14 +1,13 @@
 import 'dart:io';
 
-const appName = 'ACME Manager';
-const packageId = 'com.acme.manager';
+const appName = 'Switch GPS Manager';
+const packageId = 'com.switchmicrofinance.gps';
 const version = '1.0.0+1';
-const url = "https://example.com";
-final iconPath = '${Platform.environment['HOME']}/Downloads/icon.png';
-
+const url = 'http://84.247.172.135:8082';
+const iconPath = './icon.png';
 const keystoreFilePath = 'android/android.keystore';
 const keystoreAlias = 'key';
-const keystorePassword = 'password';
+const keystorePassword = 'Switch@2024!';
 
 Future<void> main() async {
   await _generateIcons(iconPath);
