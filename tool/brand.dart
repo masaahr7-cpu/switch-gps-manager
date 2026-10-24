@@ -8,24 +8,39 @@ const iconPath = './icon.png';
 const keystoreFilePath = 'android/android.keystore';
 const keystoreAlias = 'key';
 const keystorePassword = 'Switch@2024!';
+const poweredBy = 'Powered by Masaa24 Networks';
+const website = 'www.switchmicrofinance.co.tz';
 
 Future<void> main() async {
+  stdout.writeln('Branding to $appName - $poweredBy - $website');
   await _generateIcons(iconPath);
   await _updateTitle(appName);
   await _updatePackageId(packageId);
   await _updateVersion(version);
   await _updateUrl(url);
+  await _updateBrandingStrings();
   await _createKeystore();
-  stdout.writeln('Please run `flutterfire configure` now.');
+  stdout.writeln('SUCCESS: Branded to $appName - $poweredBy');
 }
 
 Future<void> _generateIcons(String icon) async {
-  final dir = Directory('ios/Runner/Assets.xcassets/AppIcon.appiconset');
-  dir.deleteSync(recursive: true);
-  dir.createSync();
+  try {
+    final dir = Directory('ios/Runner/Assets.xcassets/AppIcon.appiconset');
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+      await dir.create(recursive: true);
+    }
+  } catch (_) {}
 
-  File('android/app/src/main/res/drawable/ic_launcher_foreground.xml').delete();
-  File('android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml').delete();
+  try {
+    final f1 = File('android/app/src/main/res/drawable/ic_launcher_foreground.xml');
+    if (await f1.exists()) await f1.delete();
+  } catch (_) {}
+  
+  try {
+    final f2 = File('android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml');
+    if (await f2.exists()) await f2.delete();
+  } catch (_) {}
 
   final f = await _writeTempYaml('flutter_launcher_icons.yaml', '''
 flutter_launcher_icons:
@@ -33,8 +48,17 @@ flutter_launcher_icons:
   ios: true
   image_path: "$icon"
   remove_alpha_ios: true
+  web:
+    generate: true
 ''');
-  await _run('flutter', ['pub', 'run', 'flutter_launcher_icons']);
+  
+  try {
+    // New command for flutter_launcher_icons 0.13.1+
+    await _run('dart', ['run', 'flutter_launcher_icons', '-f', 'flutter_launcher_icons.yaml']);
+  } catch (e) {
+    // Fallback old command
+    await _run('flutter', ['pub', 'run', 'flutter_launcher_icons']);
+  }
   await f.delete();
 
   await _replaceInFile(
@@ -56,6 +80,12 @@ Future<void> _updateTitle(String name) async {
     RegExp(r'<key>CFBundleDisplayName</key>\s*<string>.*?</string>'),
     '<key>CFBundleDisplayName</key>\n\t<string>$name</string>',
   );
+  
+  await _replaceInFile(
+    'ios/Runner/Info.plist',
+    RegExp(r'<key>CFBundleName</key>\s*<string>.*?</string>'),
+    '<key>CFBundleName</key>\n\t<string>$name</string>',
+  );
 }
 
 Future<void> _updatePackageId(String id) async {
@@ -63,6 +93,12 @@ Future<void> _updatePackageId(String id) async {
     'android/app/build.gradle.kts',
     RegExp(r'applicationId = ".*?"'),
     'applicationId = "$id"',
+  );
+  
+  await _replaceInFile(
+    'android/app/build.gradle',
+    RegExp(r'applicationId ".*?"'),
+    'applicationId "$id"',
   );
 
   await _replaceInFile(
@@ -86,22 +122,62 @@ Future<void> _updateUrl(String url) async {
     RegExp(r'https://demo\.traccar\.org'),
     url,
   );
+  
+  // Update any other demo urls
+  await _replaceInFile(
+    'lib/main.dart',
+    RegExp(r'https://demo\.traccar\.org'),
+    url,
+  );
+}
+
+Future<void> _updateBrandingStrings() async {
+  // Change all Traccar mentions to Switch + Masaa24
+  final filesToBrand = [
+    'lib/main.dart',
+    'lib/main_screen.dart',
+    'lib/settings/about_screen.dart',
+    'lib/l10n/app_en.arb',
+    'lib/l10n/app_en.i18n.json',
+    'README.md',
+  ];
+  
+  for (final path in filesToBrand) {
+    // Replace "Powered by Traccar" -> "Powered by Masaa24 Networks"
+    await _replaceInFile(path, RegExp(r'Powered by Traccar', caseSensitive: false), poweredBy);
+    await _replaceInFile(path, RegExp(r'Traccar Manager', caseSensitive: false), appName);
+    await _replaceInFile(path, RegExp(r'\bTraccar\b'), 'Switch GPS');
+    await _replaceInFile(path, RegExp(r'www\.traccar\.org', caseSensitive: false), website);
+    await _replaceInFile(path, RegExp(r'traccar\.org', caseSensitive: false), website);
+  }
+  
+  // Update pubspec description
+  await _replaceInFile(
+    'pubspec.yaml',
+    RegExp(r'^description:\s*.*$', multiLine: true),
+    'description: "$appName - $poweredBy | $website"',
+  );
 }
 
 Future<void> _createKeystore() async {
-  final args = [
-    '-genkeypair',
-    '-v',
-    '-keystore', keystoreFilePath,
-    '-alias', keystoreAlias,
-    '-keyalg', 'RSA',
-    '-keysize', '2048',
-    '-validity', '10000',
-    '-storepass', keystorePassword,
-    '-keypass', keystorePassword,
-    '-dname', 'CN=Brand, OU=Dev, O=Company, L=City, S=State, C=US',
-  ];
-  await _run('keytool', args);
+  final keystoreFile = File(keystoreFilePath);
+  if (await keystoreFile.exists()) {
+    stdout.writeln('Keystore already exists, skipping creation');
+  } else {
+    final args = [
+      '-genkeypair',
+      '-v',
+      '-keystore', keystoreFilePath,
+      '-alias', keystoreAlias,
+      '-keyalg', 'RSA',
+      '-keysize', '2048',
+      '-validity', '10000',
+      '-storepass', keystorePassword,
+      '-keypass', keystorePassword,
+      '-dname', 'CN=Switch Microfinance, OU=GPS Division, O=Masaa24 Networks, L=Dar es Salaam, S=Dar, C=TZ',
+    ];
+    await _run('keytool', args);
+  }
 
   final file = File('android/key.properties');
   final content = '''
@@ -130,10 +206,14 @@ Future<void> _replaceInFile(String path, RegExp pattern, String replacement) asy
   if (!await file.exists()) return;
   final text = await file.readAsString();
   final newText = text.replaceAll(pattern, replacement);
-  if (newText != text) await file.writeAsString(newText);
+  if (newText != text) {
+    await file.writeAsString(newText);
+    stdout.writeln('Updated: $path');
+  }
 }
 
 Future<void> _run(String cmd, List<String> args) async {
+  stdout.writeln('Running: $cmd ${args.join(" ")}');
   final proc = await Process.start(cmd, args);
   await stdout.addStream(proc.stdout);
   await stderr.addStream(proc.stderr);
