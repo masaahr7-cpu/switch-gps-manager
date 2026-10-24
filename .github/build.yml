@@ -1,0 +1,44 @@
+name: Build Switch GPS APK
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+            - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+            - name: Build Switch GPS
+        run: |
+          flutter create switch_app --org co.tz.switchmicrofinance --project-name switch_gps --platforms android
+          cd switch_app
+          flutter pub add flutter_inappwebview
+          cat > lib/main.dart << 'EOF'
+          import 'package:flutter/material.dart';
+          import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+          void main() async { WidgetsFlutterBinding.ensureInitialized(); runApp(const SwitchApp()); }
+          class SwitchApp extends StatelessWidget {
+            const SwitchApp({super.key});
+            @override Widget build(BuildContext context) {
+              return MaterialApp(title: 'Switch GPS', debugShowCheckedModeBanner: false, theme: ThemeData(primaryColor: const Color(0xFF0A2A5E), useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0A2A5E))), home: const Home());
+            }
+          }
+          class Home extends StatelessWidget {
+            const Home({super.key});
+            @override Widget build(BuildContext context) {
+              return Scaffold(appBar: AppBar(title: const Text('Switch GPS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFF0A2A5E), centerTitle: true), body: InAppWebView(initialUrlRequest: URLRequest(url: WebUri('https://gps.switchmicrofinance.co.tz')), initialSettings: InAppWebViewSettings(javaScriptEnabled: true, domStorageEnabled: true, geolocationEnabled: true)));
+            }
+          }
+          EOF
+          flutter build apk --debug
+            - uses: actions/upload-artifact@v4
+        with:
+          name: Switch-GPS-APK-FINAL
+          path: switch_app/build/app/outputs/flutter-apk/app-debug.apk
