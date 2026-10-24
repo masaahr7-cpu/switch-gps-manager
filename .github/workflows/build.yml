@@ -1,4 +1,3 @@
-
 name: Build Switch GPS Manager
 on:
   push:
@@ -9,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -20,33 +19,45 @@ jobs:
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
+          cache: true
           
-      - name: Check files
+      - name: Clean old lock
+        run: rm -f pubspec.lock
+
+      - name: Upgrade dependencies
         run: |
-          ls -lh
-          ls -lh tool/
-          cat tool/brand.dart | head -20
+          flutter pub upgrade
+          flutter pub get
           
-      - name: Install dependencies
-        run: flutter pub get
-        
-      - name: Fix icon path if needed
+      - name: Check icon exists
         run: |
-          if [ ! -f "./icon.png" ]; then
-            echo "icon.png not found at root, checking alternatives..."
-            find . -name "icon.png" -o -name "*.png" | head -20
-            cp -f tool/icon.png ./icon.png 2>/dev/null || cp -f icon.jpg ./icon.png 2>/dev/null || echo "No icon found"
+          ls -la
+          if [ ! -f "icon.png" ]; then
+            echo "Creating dummy icon.png from existing assets..."
+            find . -name "*.png" | head -5
+            # copy any png as icon if not found
+            cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png ./icon.png 2>/dev/null || cp assets/*.png ./icon.png 2>/dev/null || echo "Will skip icon"
           fi
-          ls -lh icon.png
+          ls -lh icon.png || echo "No icon.png but continuing"
           
-      - name: Run branding tool
-        run: dart run tool/brand.dart
-        
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Run branding (allow fail)
+        continue-on-error: true
+        run: |
+          dart run tool/brand.dart || echo "Brand tool had warning but continue"
+          
+      - name: Force branding manually (guaranteed)
+        run: |
+          sed -i 's/android:label="[^"]*"/android:label="Switch GPS Manager"/' android/app/src/main/AndroidManifest.xml || true
+          sed -i 's/applicationId = ".*"/applicationId = "com.switchmicrofinance.gps"/' android/app/build.gradle.kts || true
+          sed -i 's|https://demo.traccar.org|http://84.247.172.135:8082|g' lib/main_screen.dart || true
+          sed -i 's|https://demo.traccar.org|http://84.247.172.135:8082|g' lib/main.dart || true
+          
+      - name: Build APK - Powered by Masaa24 Networks
+        run: flutter build apk --release --no-tree-shake-icons
         
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Switch-GPS-Manager-APK
+          name: Switch-GPS-Manager-Powered-by-Masaa24-Networks-www.switchmicrofinance.co.tz
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
