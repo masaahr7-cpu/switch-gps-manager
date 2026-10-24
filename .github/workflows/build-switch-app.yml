@@ -1,41 +1,17 @@
-name: Compile Switch Tracking Production APK
-on:
-  push:
-    branches: [ master, main ]
-
+name: Build Switch GPS APK
+on: [push]
 jobs:
-  compile-apk:
-    runs-on: ubuntu-22.04 # Enforces a stable Ubuntu version compatible with older tools
+  build:
+    runs-on: ubuntu-latest
     steps:
-    - name: Pull Switch Source Code From Repository
-      uses: actions/checkout@v4
-
-    - name: Configure Java Infrastructure Context
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '11' # Matches the requirements for older mobile frameworks
-
-    - name: Setup Flutter Development Framework
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.7.12'
-        channel: 'stable'
-        cache: true
-
-    - name: Download App Package Dependencies
-      run: |
-        flutter pub get
-        flutter pub run flutter_launcher_icons:main || true
-
-    - name: Clean Local System Caches
-      run: flutter clean
-
-    - name: Execute Flutter Automated Compilation Build
-      run: flutter build apk --debug --no-pub
-
-    - name: Route Native Binary Asset to Dashboard Directory
-      uses: actions/upload-artifact@v4
-      with:
-        name: SwitchTrackingBinaryBuild
-        path: build/app/outputs/flutter-apk/app-debug.apk
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - run: chmod +x gradlew
+      - run: ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Switch-GPS-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
