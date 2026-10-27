@@ -1,5 +1,5 @@
-name: traccar_manager
-description: "Switch GPS Manager - Powered by Masaa24 Networks | www.switchmicrofinance.co.tz"
+name: switch_gps_manager
+description: "Switch GPS Manager - Powered by Switch Microfinance | www.switchmicrofinance.co.tz"
 publish_to: 'none'
 version: 6.2.1+84
 

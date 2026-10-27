@@ -1,4 +1,4 @@
-package org.traccar.manager
+package tz.co.switchmicrofinance.switchgpsmanager
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
