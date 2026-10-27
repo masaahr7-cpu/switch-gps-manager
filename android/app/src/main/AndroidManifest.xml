@@ -34,7 +34,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="tz.co.switchmicrofinance.switchfleet" android:pathPrefix="/"/>
+                <data android:scheme="org.traccar.manager" android:pathPrefix="/"/>
             </intent-filter>
         </activity>
         <meta-data
