@@ -1,4 +1,4 @@
-package tz.co.switchmicrofinance.switchgpsmanager
+package tz.co.switchmicrofinance.switchfleet
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

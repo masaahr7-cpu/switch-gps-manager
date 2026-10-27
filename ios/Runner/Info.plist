@@ -27,7 +27,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>tz.co.switchmicrofinance.switchgpsmanager</string>
+				<string>tz.co.switchmicrofinance.switchfleet</string>
 			</array>
 		</dict>
 	</array>
