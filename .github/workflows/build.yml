@@ -1,63 +1,32 @@
-name: Build Switch GPS Manager
+name: Build Debug APK
+
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
+
 jobs:
-  build:
+  build-debug-apk:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          
-      - name: Setup Flutter
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.24.5'
           channel: 'stable'
-          cache: true
-          
-      - name: Clean old lock
-        run: rm -f pubspec.lock
 
-      - name: Upgrade dependencies
-        run: |
-          flutter pub upgrade
-          flutter pub get
-          
-      - name: Check icon exists
-        run: |
-          ls -la
-          if [ ! -f "icon.png" ]; then
-            echo "Creating dummy icon.png from existing assets..."
-            find . -name "*.png" | head -5
-            # copy any png as icon if not found
-            cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png ./icon.png 2>/dev/null || cp assets/*.png ./icon.png 2>/dev/null || echo "Will skip icon"
-          fi
-          ls -lh icon.png || echo "No icon.png but continuing"
-          
-      - name: Run branding (allow fail)
-        continue-on-error: true
-        run: |
-          dart run tool/brand.dart || echo "Brand tool had warning but continue"
-          
-      - name: Force branding manually (guaranteed)
-        run: |
-          sed -i 's/android:label="[^"]*"/android:label="Switch GPS Manager"/' android/app/src/main/AndroidManifest.xml || true
-          sed -i 's/applicationId = ".*"/applicationId = "com.switchmicrofinance.gps"/' android/app/build.gradle.kts || true
-          sed -i 's|https://demo.traccar.org|http://84.247.172.135:8082|g' lib/main_screen.dart || true
-          sed -i 's|https://demo.traccar.org|http://84.247.172.135:8082|g' lib/main.dart || true
-          
-      - name: Build APK - Powered by Masaa24 Networks
-        run: flutter build apk --release --no-tree-shake-icons
-        
-      - name: Upload APK
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Switch-GPS-Manager-Powered-by-Masaa24-Networks-www.switchmicrofinance.co.tz
-          path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 30
+          name: switch-fleet-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
